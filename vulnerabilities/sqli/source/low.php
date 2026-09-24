@@ -6,19 +6,22 @@ if( isset( $_REQUEST[ 'Submit' ] ) ) {
 
 	switch ($_DVWA['SQLI_DB']) {
 		case MYSQL:
-			// Check database
-			$query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";
-			$result = mysqli_query($GLOBALS["___mysqli_ston"],  $query ) or die( '<pre>' . ((is_object($GLOBALS["___mysqli_ston"])) ? mysqli_error($GLOBALS["___mysqli_ston"]) : (($___mysqli_res = mysqli_connect_error()) ? $___mysqli_res : false)) . '</pre>' );
+			$stmt = mysqli_prepare(
+                                $GLOBALS["___mysqli_ston"],
+                                "SELECT first_name, last_name FROM users WHERE user_id = ?;"
+                        );
 
-			// Get results
-			while( $row = mysqli_fetch_assoc( $result ) ) {
-				// Get values
-				$first = $row["first_name"];
-				$last  = $row["last_name"];
+                        mysqli_stmt_bind_param( $stmt, "i", $id );
+                        mysqli_stmt_execute( $stmt );
+                        mysqli_stmt_bind_result( $stmt, $first, $last );
 
-				// Feedback for end user
-				$html .= "<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>";
-			}
+                        // Get results
+                        while( mysqli_stmt_fetch( $stmt ) ) {
+                                // Feedback for end user
+                                $html .= "<pre>ID: {$id}<br />First name: {$first}<br />Surname: {$last}</pre>";
+                        }
+
+                        mysqli_stmt_close( $stmt );
 
 			mysqli_close($GLOBALS["___mysqli_ston"]);
 			break;
@@ -28,11 +31,14 @@ if( isset( $_REQUEST[ 'Submit' ] ) ) {
 			#$sqlite_db_connection = new SQLite3($_DVWA['SQLITE_DB']);
 			#$sqlite_db_connection->enableExceptions(true);
 
-			$query  = "SELECT first_name, last_name FROM users WHERE user_id = '$id';";
-			#print $query;
-			try {
-				$results = $sqlite_db_connection->query($query);
-			} catch (Exception $e) {
+			$stmt = $sqlite_db_connection->prepare(
+                                'SELECT first_name, last_name FROM users WHERE user_id = :id;'
+                        );
+
+                        try {
+                                $stmt->bindValue( ':id', $id, SQLITE3_INTEGER );
+                                $results = $stmt->execute();
+                        } catch (Exception $e) {
 				echo 'Caught exception: ' . $e->getMessage();
 				exit();
 			}
