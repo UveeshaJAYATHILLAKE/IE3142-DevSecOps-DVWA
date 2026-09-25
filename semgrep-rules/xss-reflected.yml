@@ -1,0 +1,18 @@
+rules:
+  - id: dvwa-reflected-xss-unsafe-output
+    languages:
+      - php
+    message: "Reflected XSS: user-controlled GET input is directly inserted into HTML output without encoding."
+    severity: ERROR
+    patterns:
+      - pattern: $HTML .= $X;
+      - metavariable-pattern:
+          metavariable: $X
+          patterns:
+            - pattern: $_GET[$PARAM]
+    metadata:
+      category: security
+      technology:
+        - php
+      cwe:
+        - "CWE-79"
