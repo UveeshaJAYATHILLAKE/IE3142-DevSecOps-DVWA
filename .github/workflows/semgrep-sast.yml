@@ -1,4 +1,4 @@
-name: Semgrep SAST
+name: Security Scanning
 
 on:
   push:
@@ -23,3 +23,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install semgrep
           semgrep scan --config=auto .
+
+  dependency-scan:
+    name: Composer Dependency Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP and Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Audit Composer Dependencies
+        working-directory: vulnerabilities/api
+        run: composer audit --locked
