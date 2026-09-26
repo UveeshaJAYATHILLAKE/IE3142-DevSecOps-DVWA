@@ -24,6 +24,10 @@ jobs:
           pip install semgrep
           semgrep scan --config=auto .
 
+      - name: Command Injection Security Gate
+        run: |
+          semgrep scan --config=.semgrep/command-injection.yml --error vulnerabilities/exec/source/low.php
+
   dependency-scan:
     name: Composer Dependency Scan
     runs-on: ubuntu-latest
