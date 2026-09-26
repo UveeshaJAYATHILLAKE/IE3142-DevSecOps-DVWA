@@ -1,0 +1,11 @@
+rules:
+  - id: dvwa-command-injection-unvalidated-input
+    message: "SECURITY GATE: User-controlled input is passed directly to shell_exec, creating a command injection risk."
+    severity: ERROR
+    languages:
+      - php
+    patterns:
+      - pattern: shell_exec($CMD . $INPUT)
+      - pattern-inside: |
+          $INPUT = $_REQUEST[...];
+          ...
